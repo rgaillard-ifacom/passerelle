@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio PASSERELLE – Bac+3 RACM</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/msal-browser/3.28.1/msal-browser.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #12163A;
+    --navy-deep: #0D1030;
+    --gold: #5B5BF5;
+    --grad: linear-gradient(120deg, #5B5BF5, #9D4EF0);
+    --violet: #9D4EF0;
+    --amber: #F59E0B;
+    --amber-soft: #FEF3E2;
+    --gold-soft: #EEEEFE;
+    --grey: #6C7189;
+    --paper: #F5F6FB;
+    --white: #FFFFFF;
+    --text: #1E2338;
+    --text-soft: #6C7189;
+    --border: rgba(16,20,42,0.13);
+    --border-med: rgba(16,20,42,0.25);
+    --success: #2D7A4F;
+  }
+
+  html { background: var(--paper); }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar {
+    width: 230px;
+    background: var(--navy);
+    color: white;
+    padding: 2rem 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; bottom: 0; left: 0;
+    z-index: 50;
+  }
+  .side-logo {
+    padding: 0 1.5rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    margin-bottom: 1.25rem;
+  }
+  .side-logo .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #C4B5FD;
+    margin-bottom: 6px;
+  }
+  .side-logo .name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 21px;
+    font-weight: 500;
+    line-height: 1.15;
+  }
+  .side-logo .sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 6px;
+  }
+
+  .side-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 0 0.75rem; }
+  .side-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: rgba(255,255,255,0.65);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+  }
+  .side-btn .idx {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    width: 16px;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .side-btn:hover { background: rgba(255,255,255,0.07); color: white; }
+  .side-btn.active { background: var(--grad); color: white; box-shadow: 0 4px 12px -3px rgba(91,91,245,0.5); }
+  .side-btn.active .idx { color: rgba(255,255,255,0.75); }
+
+  .side-foot {
+    padding: 1.25rem 1.5rem 0;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.6;
+  }
+  .side-foot strong { color: rgba(255,255,255,0.75); font-weight: 500; }
+
+  /* ============ MAIN ============ */
+  .main {
+    flex: 1;
+    margin-left: 230px;
+    padding: 2.5rem 3rem 6.5rem;
+    max-width: 900px;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; animation: fadein 0.25s ease; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .page-header { margin-bottom: 2rem; }
+  .page-header .eyebrow {
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .page-header h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 27px;
+    font-weight: 500;
+    color: var(--navy);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .page-header p { font-size: 13.5px; color: var(--text-soft); line-height: 1.6; max-width: 560px; }
+
+  /* ============ COUVERTURE ============ */
+  .cover-hero {
+    background:
+      radial-gradient(ellipse 80% 120% at 100% 0%, rgba(157,78,240,0.30), transparent 55%),
+      radial-gradient(ellipse 70% 110% at 0% 100%, rgba(91,91,245,0.35), transparent 55%),
+      var(--navy);
+    border-radius: 14px;
+    padding: 2.5rem 2.5rem 2rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+  }
+  .cover-hero::after {
+    content: '';
+    position: absolute;
+    right: -60px; top: 50%;
+    transform: translateY(-50%) rotate(-12deg);
+    width: 340px; height: 340px;
+    border: 1.5px solid rgba(91,91,245,0.28);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .cover-hero::before {
+    content: '';
+    position: absolute;
+    right: -20px; top: 50%;
+    transform: translateY(-50%) rotate(-12deg);
+    width: 340px; height: 340px;
+    border: 1.5px solid rgba(91,91,245,0.14);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .cover-hero .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #C4B5FD;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .cover-hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 36px;
+    font-weight: 500;
+    line-height: 1.15;
+    margin-bottom: 10px;
+    position: relative; z-index: 1;
+  }
+  .cover-hero .sub { font-size: 13.5px; color: rgba(255,255,255,0.6); margin-bottom: 2rem; position: relative; z-index: 1; }
+
+  .cover-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    position: relative; z-index: 1;
+    max-width: 520px;
+  }
+  .cover-field label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #C4B5FD;
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+  .cover-field input {
+    width: 100%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 7px;
+    padding: 9px 12px;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+  }
+  .cover-field input::placeholder { color: rgba(255,255,255,0.35); }
+  .cover-field input:focus { outline: none; border-color: var(--violet); background: rgba(255,255,255,0.13); box-shadow: 0 0 0 3px rgba(157,78,240,0.25); }
+
+  .cover-intention {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    border-left: 3px solid;
+    border-image: linear-gradient(180deg, #5B5BF5, #9D4EF0) 1;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text);
+    font-style: italic;
+  }
+
+  /* ============ COMPÉTENCES ============ */
+  .comp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+  .comp-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .comp-card:hover {
+    border-color: rgba(91,91,245,0.4);
+    box-shadow: 0 2px 4px rgba(16,20,42,0.05), 0 16px 36px -14px rgba(91,91,245,0.28);
+    transform: translateY(-3px);
+  }
+  .comp-card .comp-color-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+  .comp-card .comp-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    color: var(--grey);
+    margin-bottom: 7px;
+  }
+  .comp-card .comp-name { font-family: 'Space Grotesk', sans-serif; font-size: 14.5px; font-weight: 500; color: var(--navy); margin-bottom: 5px; }
+  .comp-card .comp-def { font-size: 11.5px; color: var(--text-soft); line-height: 1.45; }
+  .comp-card .comp-arrow {
+    position: absolute;
+    top: 14px; right: 14px;
+    font-size: 14px;
+    color: var(--border-med);
+    transition: all 0.15s;
+  }
+  .comp-card:hover .comp-arrow { color: var(--gold); transform: translateX(3px); }
+
+  .scale-table { width: 100%; border-collapse: collapse; background: var(--white); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+  .scale-table th {
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-soft);
+    padding: 10px 16px;
+    background: var(--bg);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .scale-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.45;
+  }
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ============ ÉVALUATION ============ */
+  .eval-grid { margin-bottom: 1.25rem; background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 4px 18px; }
+  .eval-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .eval-row:last-child { border-bottom: none; }
+  .eval-comp { flex: 1; font-size: 13px; color: var(--navy); min-width: 140px; font-weight: 500; }
+  .eval-stars { display: flex; gap: 5px; }
+  .star-btn {
+    width: 30px; height: 30px;
+    border-radius: 7px;
+    border: 1px solid var(--border-med);
+    background: var(--white);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-soft);
+    transition: all 0.12s;
+    font-family: 'Inter', sans-serif;
+  }
+  .star-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .star-btn.selected { background: var(--grad); border-color: transparent; color: white; box-shadow: 0 3px 10px -2px rgba(91,91,245,0.5); }
+  .eval-num { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; min-width: 26px; text-align: center; }
+
+  /* ============ SÉANCES — LA PASSERELLE ============ */
+  .passerelle-wrap {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+  .passerelle-label {
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    font-weight: 600;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .passerelle-label .pct { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: 0; text-transform: none; }
+  .passerelle {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    position: relative;
+    padding-bottom: 20px;
+  }
+  .passerelle::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 13px;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, var(--border-med) 0 8px, transparent 8px 14px);
+  }
+  .plank {
+    flex: 1;
+    border: none;
+    background: var(--paper);
+    border: 1px solid var(--border-med);
+    border-radius: 6px 6px 3px 3px;
+    height: 40px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-soft);
+    transition: all 0.16s;
+    position: relative;
+    z-index: 1;
+  }
+  .plank:hover { border-color: var(--gold); color: var(--navy); transform: translateY(-2px); }
+  .plank.active {
+    background: var(--grad);
+    border-color: transparent;
+    color: white;
+    height: 48px;
+    box-shadow: 0 6px 16px -3px rgba(91,91,245,0.55);
+  }
+  .plank.filled::after {
+    content: '';
+    position: absolute;
+    top: 5px; right: 5px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+  }
+  .plank.milestone {
+    background: var(--amber-soft);
+    border-color: var(--amber);
+    color: #92600A;
+  }
+  .plank.milestone.active { background: linear-gradient(120deg, #F59E0B, #F97316); border-color: transparent; color: white; box-shadow: 0 6px 14px rgba(245,158,11,0.4); }
+  .passerelle-legend {
+    display: flex;
+    gap: 18px;
+    margin-top: 6px;
+    font-size: 10.5px;
+    color: var(--text-soft);
+  }
+  .passerelle-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend-chip { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .milestone-notice {
+    background: var(--amber-soft);
+    border: 1px solid rgba(245,158,11,0.45);
+    border-radius: 8px;
+    padding: 11px 16px;
+    font-size: 12.5px;
+    color: #92600A;
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+    display: none;
+  }
+  .milestone-notice.visible { display: block; }
+
+  .session-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 1.25rem; }
+  .session-num { font-family: 'Space Grotesk', sans-serif; font-size: 40px; line-height: 1; font-weight: 700; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .session-header .sh-title { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 500; color: var(--navy); }
+  .session-header .sh-sub { font-size: 12.5px; color: var(--text-soft); }
+
+  .section-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.75rem;
+  }
+
+  /* ============ REFLECT ============ */
+  .reflect-block { margin-bottom: 1.1rem; }
+  .reflect-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .reflect-dot { width: 7px; height: 7px; border-radius: 2px; background: var(--gold); flex-shrink: 0; transform: rotate(45deg); }
+  .reflect-hint { font-size: 11.5px; color: var(--text-soft); margin-bottom: 6px; line-height: 1.5; }
+  .reflect-area {
+    width: 100%;
+    border: 1px solid var(--border-med);
+    border-radius: 8px;
+    padding: 11px 13px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    resize: vertical;
+    min-height: 66px;
+    background: var(--white);
+    line-height: 1.55;
+    transition: border-color 0.15s;
+  }
+  .reflect-area:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(91,91,245,0.15); }
+  .reflect-area::placeholder { color: var(--grey); font-style: italic; }
+  input.reflect-area { min-height: unset; padding: 9px 13px; margin-bottom: 6px; display: block; }
+
+  /* ============ RECUL ============ */
+  .recul-card {
+    background:
+      radial-gradient(ellipse 90% 130% at 100% 0%, rgba(157,78,240,0.28), transparent 55%),
+      var(--navy);
+    border-radius: 12px;
+    padding: 1.35rem 1.5rem;
+    margin-bottom: 0.85rem;
+    color: white;
+    border-left: 3px solid var(--violet);
+  }
+  .recul-q { font-family: 'Space Grotesk', sans-serif; font-size: 16.5px; font-weight: 600; margin-bottom: 10px; color: #DDD6FE; }
+  .recul-area {
+    width: 100%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 11px 13px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: white;
+    resize: vertical;
+    min-height: 58px;
+    line-height: 1.55;
+  }
+  .recul-area::placeholder { color: rgba(255,255,255,0.38); font-style: italic; }
+  .recul-area:focus { outline: none; background: rgba(255,255,255,0.13); border-color: var(--violet); box-shadow: 0 0 0 3px rgba(157,78,240,0.22); }
+
+  /* ============ RADARS ============ */
+  .tabs-mini { display: flex; gap: 5px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .tab-mini {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--border-med);
+    background: var(--white);
+    color: var(--text-soft);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+  }
+  .tab-mini:hover { border-color: var(--gold); color: var(--navy); }
+  .tab-mini.active { background: var(--grad); border-color: transparent; color: white; font-weight: 600; box-shadow: 0 4px 12px -3px rgba(91,91,245,0.5); }
+  .chart-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+  .chart-wrap { position: relative; width: 100%; height: 340px; }
+  .radar-caption { font-size: 12px; color: var(--text-soft); text-align: center; margin-top: 10px; }
+
+  /* ============ BILAN ============ */
+  .bilan-section {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 0.85rem;
+  }
+  .bilan-icon {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .bilan-icon .bi-title { color: var(--navy); margin-left: 6px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; }
+
+  /* ============ SAVE / EXPORT ============ */
+  .save-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    margin-top: 0.75rem;
+  }
+  .save-status { font-size: 12.5px; color: var(--success); font-weight: 500; }
+  .save-btn {
+    background: var(--grad);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .save-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -6px rgba(91,91,245,0.55); }
+
+  .export-bar {
+    position: fixed;
+    bottom: 0; left: 230px; right: 0;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border);
+    padding: 11px 3rem;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 100;
+  }
+  .export-note { font-size: 11.5px; color: var(--text-soft); margin-right: auto; }
+  .export-btn {
+    background: var(--grad);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .export-btn:hover { opacity: 0.88; }
+  .export-btn.secondary {
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--border-med);
+  }
+
+  /* ============ CLOUD ============ */
+  .cloud-box {
+    margin: 0 0.75rem 1rem;
+    padding: 12px 13px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+  }
+  .cloud-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 9px;
+    line-height: 1.4;
+  }
+  .cloud-dot { width: 8px; height: 8px; border-radius: 50%; background: #6C7189; flex-shrink: 0; }
+  .cloud-dot.on { background: var(--success); box-shadow: 0 0 8px rgba(16,185,129,0.6); }
+  .cloud-dot.err { background: #EF4444; }
+  .cloud-btn {
+    width: 100%;
+    background: var(--grad);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cloud-btn:hover { transform: translateY(-1px); }
+  .cloud-btn.secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); margin-top: 6px; }
+  .cloud-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  @media (max-width: 900px) {
+    .cloud-box { margin: 0 1rem 0.9rem; }
+  }
+
+  /* ============ MODAL ============ */
+  #comp-modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(30,44,67,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  #comp-modal {
+    background: var(--white);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.25);
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 900px) {
+    .layout { flex-direction: column; }
+    .sidebar {
+      position: static;
+      width: 100%;
+      flex-direction: column;
+      padding: 1.25rem 0 0;
+    }
+    .side-logo { padding: 0 1.25rem 1rem; margin-bottom: 0.75rem; }
+    .side-nav {
+      flex-direction: row;
+      overflow-x: auto;
+      padding: 0 1rem 0.9rem;
+      gap: 4px;
+      scrollbar-width: none;
+    }
+    .side-nav::-webkit-scrollbar { display: none; }
+    .side-btn { white-space: nowrap; padding: 8px 13px; font-size: 12px; }
+    .side-btn .idx { display: none; }
+    .side-foot { display: none; }
+    .main { margin-left: 0; padding: 1.5rem 1.25rem 7.5rem; }
+    .comp-grid { grid-template-columns: 1fr; }
+    .cover-fields { grid-template-columns: 1fr; }
+    .cover-field.wide { grid-column: span 1 !important; }
+    .cover-hero { padding: 1.75rem 1.5rem 1.5rem; }
+    .cover-hero h1 { font-size: 28px; }
+    .export-bar { left: 0; padding: 10px 1.25rem; flex-wrap: wrap; }
+    .export-note { flex-basis: 100%; margin-bottom: 2px; }
+    .plank { font-size: 12px; height: 36px; }
+    .plank.active { height: 42px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="side-logo">
+      <div class="eyebrow">Projet Passerelle</div>
+      <div class="name">Portfolio de compétences</div>
+      <div class="sub">Bac+3 RACM · MFR IFACOM · 2026–2027</div>
+    </div>
+    <nav class="side-nav">
+      <button class="side-btn active" onclick="showSection('cover')"><span class="idx">01</span>Couverture</button>
+      <button class="side-btn" onclick="showSection('comps')"><span class="idx">02</span>Compétences</button>
+      <button class="side-btn" onclick="showSection('diag')"><span class="idx">03</span>Diagnostic</button>
+      <button class="side-btn" onclick="showSection('seances')"><span class="idx">04</span>Séances</button>
+      <button class="side-btn" onclick="showSection('radars')"><span class="idx">05</span>Radars</button>
+      <button class="side-btn" onclick="showSection('bilan')"><span class="idx">06</span>Bilan</button>
+    </nav>
+    <div class="cloud-box">
+      <div class="cloud-status">
+        <span class="cloud-dot" id="cloud-dot"></span>
+        <span id="cloud-status-text">OneDrive : non connecté</span>
+      </div>
+      <button class="cloud-btn" id="cloud-login-btn" onclick="cloudLogin()">Se connecter à OneDrive</button>
+      <button class="cloud-btn secondary" id="cloud-logout-btn" onclick="cloudLogout()" style="display:none;">Se déconnecter</button>
+    </div>
+    <div class="side-foot">
+      <strong>MFR IFACOM</strong><br>
+      Suivi des compétences comportementales
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <!-- COUVERTURE -->
+    <div class="section active" id="s-cover">
+      <div class="cover-hero">
+        <div class="eyebrow">Bac+3 RACM · MFR IFACOM</div>
+        <h1>Portfolio<br>de compétences</h1>
+        <div class="sub">Projet PASSERELLE · 2026–2027</div>
+        <div class="cover-fields">
+          <div class="cover-field">
+            <label>Nom &amp; Prénom</label>
+            <input type="text" placeholder="Votre nom" id="f-nom" oninput="saveField('nom',this.value)">
+          </div>
+          <div class="cover-field">
+            <label>Promotion</label>
+            <input type="text" placeholder="Ex. RACM 2026" id="f-promo" oninput="saveField('promo',this.value)">
+          </div>
+          <div class="cover-field wide" style="grid-column: span 2;">
+            <label>Entreprise / Alternance</label>
+            <input type="text" placeholder="Votre entreprise" id="f-entreprise" oninput="saveField('entreprise',this.value)">
+          </div>
+        </div>
+      </div>
+      <div class="cover-intention">
+        "Ce portfolio me permet de suivre ma progression dans ma manière de comprendre un sujet de société, d'interagir avec des acteurs engagés et de développer ma posture professionnelle et citoyenne."
+      </div>
+    </div>
+
+    <!-- COMPÉTENCES -->
+    <div class="section" id="s-comps">
+      <div class="page-header">
+        <div class="eyebrow">Référentiel</div>
+        <h2>Les 7 compétences travaillées</h2>
+        <p>Compétences adaptées au projet PASSERELLE — rencontres d'acteurs, sujets de société, posture managériale. Clique sur une compétence pour en voir le détail.</p>
+      </div>
+      <div class="comp-grid" id="comp-grid-container"></div>
+
+      <div class="page-header" style="margin-top:2rem;margin-bottom:1rem;">
+        <div class="eyebrow">Repères</div>
+        <h2 style="font-size:21px;">Échelle d'évaluation</h2>
+      </div>
+      <table class="scale-table">
+        <thead>
+          <tr>
+            <th>Niveau</th>
+            <th>Intitulé</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="level-badge" style="background:#EEEFF4;color:#666;">1</span></td>
+            <td style="font-weight:600;">Débutant</td>
+            <td style="color:var(--text-soft);">Je découvre, j'ai besoin d'aide</td>
+          </tr>
+          <tr>
+            <td><span class="level-badge" style="background:#FEF3E2;color:#92600A;">2</span></td>
+            <td style="font-weight:600;">En développement</td>
+            <td style="color:var(--text-soft);">J'essaie mais c'est irrégulier</td>
+          </tr>
+          <tr>
+            <td><span class="level-badge" style="background:#EEEEFE;color:#12163A;">3</span></td>
+            <td style="font-weight:600;">Maîtrise satisfaisante</td>
+            <td style="color:var(--text-soft);">Je suis à l'aise dans la plupart des situations</td>
+          </tr>
+          <tr>
+            <td><span class="level-badge" style="background:#D9F5EA;color:#0B7A56;">4</span></td>
+            <td style="font-weight:600;">Maîtrise affirmée</td>
+            <td style="color:var(--text-soft);">Je suis naturel et pertinent</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- DIAGNOSTIC -->
+    <div class="section" id="s-diag">
+      <div class="page-header">
+        <div class="eyebrow">Point de départ</div>
+        <h2>Diagnostic initial — séance 1</h2>
+        <p>Évalue-toi honnêtement pour chaque compétence. Ce sera ton point de départ.</p>
+      </div>
+      <div class="eval-grid" id="diag-grid"></div>
+      <div class="save-bar">
+        <span class="save-status" id="diag-save-status"></span>
+        <button class="save-btn" onclick="saveDiag()">Enregistrer le diagnostic</button>
+      </div>
+    </div>
+
+    <!-- SÉANCES -->
+    <div class="section" id="s-seances">
+      <div class="page-header">
+        <div class="eyebrow">Carnet de bord</div>
+        <h2>Fiches de séance</h2>
+        <p>Une fiche à compléter à chaque séance (environ 10 minutes). Les séances 3, 6 et 8 incluent des questions de recul.</p>
+      </div>
+
+      <div class="passerelle-wrap">
+        <div class="passerelle-label">
+          <span>Ta traversée — 8 séances</span>
+          <span class="pct" id="prog-pct">Séance 1 / 8</span>
+        </div>
+        <div class="passerelle" id="sess-nav"></div>
+        <div class="passerelle-legend">
+          <span><span class="legend-chip" style="background:var(--amber-soft);border:1px solid var(--amber);"></span>Séance de recul</span>
+          <span><span class="legend-chip" style="background:var(--success);border-radius:50%;width:8px;height:8px;"></span>Séance renseignée</span>
+        </div>
+      </div>
+
+      <div class="milestone-notice" id="milestone-notice">
+        Séance de prise de recul — des questions supplémentaires t'attendent ci-dessous.
+      </div>
+
+      <div class="session-header">
+        <div class="session-num" id="sess-num">1</div>
+        <div>
+          <div class="sh-title">Fiche de séance</div>
+          <div class="sh-sub">Auto-évaluation &amp; réflexivité</div>
+        </div>
+      </div>
+
+      <div class="section-label">Auto-évaluation</div>
+      <div class="eval-grid" id="sess-eval-grid"></div>
+
+      <div style="margin-top:1.5rem;">
+        <div class="reflect-block">
+          <div class="reflect-label"><span class="reflect-dot"></span>Situation marquante</div>
+          <textarea class="reflect-area" id="r-situation" placeholder="Aujourd'hui j'ai vécu / observé…" rows="3"></textarea>
+        </div>
+        <div class="reflect-block">
+          <div class="reflect-label"><span class="reflect-dot"></span>Analyse personnelle</div>
+          <textarea class="reflect-area" id="r-analyse" placeholder="Ce que cela dit de moi (réaction, posture, comportement)…" rows="3"></textarea>
+        </div>
+        <div class="reflect-block">
+          <div class="reflect-label"><span class="reflect-dot"></span>Esprit critique</div>
+          <textarea class="reflect-area" id="r-critique" placeholder="Ce que je retiens du sujet ou de l'acteur rencontré…" rows="2"></textarea>
+        </div>
+        <div class="reflect-block">
+          <div class="reflect-label"><span class="reflect-dot"></span>Évolution de mon point de vue</div>
+          <textarea class="reflect-area" id="r-evolution" placeholder="Mon point de vue a-t-il évolué ? Pourquoi ?" rows="2"></textarea>
+        </div>
+        <div class="reflect-block">
+          <div class="reflect-label"><span class="reflect-dot" style="background:#7C5CBF;"></span>Lien avec mes cours</div>
+          <div class="reflect-hint">Quel(s) concept(s) ou notion(s) vu(s) en cours éclaire(nt) ce que j'ai vécu aujourd'hui ?</div>
+          <input type="text" class="reflect-area" id="r-cours-notion" placeholder="Notion / cours concerné (ex. : communication non-verbale, gestion des objections…)">
+          <textarea class="reflect-area" id="r-cours-lien" placeholder="En quoi ce concept s'applique ou prend sens dans le projet PASSERELLE ?" rows="2"></textarea>
+        </div>
+        <div class="reflect-block">
+          <div class="reflect-label"><span class="reflect-dot" style="background:var(--navy);"></span>Remise en question</div>
+          <textarea class="reflect-area" id="r-remise" placeholder="Avec du recul, j'aurais pu…" rows="2"></textarea>
+        </div>
+        <div class="reflect-block">
+          <div class="reflect-label"><span class="reflect-dot" style="background:var(--success);"></span>Plan de progression</div>
+          <textarea class="reflect-area" id="r-plan" placeholder="Pour la prochaine séance, je veux…" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div id="recul-section" style="display:none; margin-top:1.75rem;">
+        <div class="section-label" style="padding-top:1rem;border-top:1px solid var(--border);">Questions de recul (séance jalonnée)</div>
+        <div class="recul-card">
+          <div class="recul-q">Est-ce que ma vision du sujet de société évolue ?</div>
+          <textarea class="recul-area" id="rq1" placeholder="Ma réponse…"></textarea>
+        </div>
+        <div class="recul-card">
+          <div class="recul-q">Dans quelles situations suis-je inconfortable ?</div>
+          <textarea class="recul-area" id="rq2" placeholder="Ma réponse…"></textarea>
+        </div>
+        <div class="recul-card">
+          <div class="recul-q">Comment je réagis face à des points de vue différents ?</div>
+          <textarea class="recul-area" id="rq3" placeholder="Ma réponse…"></textarea>
+        </div>
+      </div>
+
+      <div class="save-bar">
+        <span class="save-status" id="sess-save-status"></span>
+        <button class="save-btn" onclick="saveSess()">Enregistrer la séance</button>
+      </div>
+    </div>
+
+    <!-- RADARS -->
+    <div class="section" id="s-radars">
+      <div class="page-header">
+        <div class="eyebrow">Progression</div>
+        <h2>Évolution des compétences</h2>
+        <p>Visualise ta progression entre ton diagnostic de départ et les trois temps du parcours.</p>
+      </div>
+      <div class="tabs-mini">
+        <button class="tab-mini active" onclick="showRadar('depart')">Diagnostic</button>
+        <button class="tab-mini" onclick="showRadar('t1')">S.1–3</button>
+        <button class="tab-mini" onclick="showRadar('t2')">S.4–6</button>
+        <button class="tab-mini" onclick="showRadar('t3')">S.7–8</button>
+        <button class="tab-mini" onclick="showRadar('compare')">Comparaison</button>
+      </div>
+      <div class="chart-card">
+        <div class="chart-wrap">
+          <canvas id="radarChart" role="img" aria-label="Radar des 7 compétences PASSERELLE"></canvas>
+        </div>
+        <div class="radar-caption" id="radar-caption">Diagnostic initial — auto-évaluation de départ</div>
+      </div>
+    </div>
+
+    <!-- BILAN -->
+    <div class="section" id="s-bilan">
+      <div class="page-header">
+        <div class="eyebrow">Fin de traversée</div>
+        <h2>Bilan final</h2>
+        <p>Prends le temps de mesurer ton chemin parcouru sur l'ensemble du parcours.</p>
+      </div>
+      <div class="bilan-section">
+        <span class="bilan-icon">01<span class="bi-title">Évolutions principales</span></span>
+        <textarea class="reflect-area" id="b1" placeholder="Mes principales évolutions sur ce parcours…" rows="3" style="width:100%;"></textarea>
+      </div>
+      <div class="bilan-section">
+        <span class="bilan-icon">02<span class="bi-title">Ce que j'ai appris sur moi</span></span>
+        <textarea class="reflect-area" id="b2" placeholder="Les découvertes sur ma façon d'être et de réagir…" rows="3" style="width:100%;"></textarea>
+      </div>
+      <div class="bilan-section">
+        <span class="bilan-icon">03<span class="bi-title">Mon regard sur le sujet de société</span></span>
+        <textarea class="reflect-area" id="b3" placeholder="Comment mon regard a évolué…" rows="3" style="width:100%;"></textarea>
+      </div>
+      <div class="bilan-section">
+        <span class="bilan-icon">04<span class="bi-title">Ma capacité à me remettre en question</span></span>
+        <textarea class="reflect-area" id="b4" placeholder="Où en suis-je réellement dans cette compétence clé ?…" rows="3" style="width:100%;"></textarea>
+      </div>
+      <div class="bilan-section">
+        <span class="bilan-icon">05<span class="bi-title">Mes axes de progression</span></span>
+        <textarea class="reflect-area" id="b5" placeholder="Ce sur quoi je veux continuer à travailler…" rows="3" style="width:100%;"></textarea>
+      </div>
+      <div class="save-bar">
+        <span class="save-status" id="bilan-save-status"></span>
+        <button class="save-btn" onclick="saveBilan()">Enregistrer le bilan</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL COMPÉTENCE -->
+<div id="comp-modal-overlay" onclick="closeCompModal(event)">
+  <div id="comp-modal">
+    <div id="comp-modal-header" style="padding:1.5rem 1.5rem 1rem;border-radius:14px 14px 0 0;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">
+        <div>
+          <div id="comp-modal-num" style="font-family:'Space Grotesk',sans-serif;font-size:11px;letter-spacing:.06em;opacity:.75;margin-bottom:4px;"></div>
+          <div id="comp-modal-title" style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:500;line-height:1.2;"></div>
+        </div>
+        <button onclick="closeCompModal()" style="background:rgba(255,255,255,0.35);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:15px;color:inherit;flex-shrink:0;line-height:1;">✕</button>
+      </div>
+      <div id="comp-modal-def" style="font-size:13px;margin-top:10px;opacity:.8;line-height:1.5;font-style:italic;"></div>
+    </div>
+    <div style="padding:0 1.5rem 1.5rem;">
+      <div id="comp-modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT BAR -->
+<div class="export-bar">
+  <span class="export-note" id="export-note">Données sauvegardées localement</span>
+  <button class="export-btn secondary" onclick="exportData()">Exporter mes données (JSON)</button>
+  <button class="export-btn" onclick="importData()">Importer</button>
+</div>
+
+<input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<script>
+const COMP_DATA = [
+  {
+    name: "Communication interpersonnelle",
+    def: "Adapter mon message à l'interlocuteur et au contexte",
+    color: "#3B82F6",
+    colorBg: "#EFF6FF",
+    pourquoi: "Dans PASSERELLE, tu rencontres des acteurs engagés aux profils très variés. Savoir adapter ton discours, ton ton et ta posture est indispensable pour créer un vrai échange.",
+    niveaux: [
+      "Je reste sur un registre unique, quelle que soit la situation",
+      "Je commence à adapter mon langage mais de façon hésitante",
+      "J'ajuste naturellement mon message selon l'interlocuteur",
+      "Je pilote la communication avec aisance et pertinence dans toutes les situations"
+    ],
+    signes: ["Adapter son vocabulaire à un acteur de terrain vs un dirigeant", "Moduler son ton selon le contexte (formel, informel, tendu)", "Reformuler pour vérifier la compréhension"],
+    pieges: ["Parler de la même façon à tout le monde", "Utiliser du jargon sans s'en rendre compte"],
+    classe: {
+      texte: "La classe est un terrain d'entraînement permanent. Chaque échange entre pairs est une occasion de tester sa capacité à adapter son message : tu ne parles pas à un ami comme à un intervenant externe, ni à quelqu'un qui partage ton avis comme à quelqu'un qui le conteste.",
+      exemples: ["Expliquer à un camarade une idée complexe avec tes propres mots", "Adapter ton registre selon que tu t'exprimes à l'oral devant le groupe ou en aparté", "Observer comment les autres communiquent et identifier ce qui fonctionne ou non"]
+    }
+  },
+  {
+    name: "Écoute active",
+    def: "Recevoir et intégrer les propos des autres sans filtre",
+    color: "#06B6D4",
+    colorBg: "#ECFEFF",
+    pourquoi: "Chaque intervenant rencontré dans PASSERELLE porte un vécu, une vision du monde. L'écoute active te permet de capter ce qui est dit… mais aussi ce qui ne l'est pas.",
+    niveaux: [
+      "J'attends mon tour de parler plus que je n'écoute",
+      "J'écoute mais je filtre selon mes idées préconçues",
+      "Je reformule, je pose des questions pour approfondir",
+      "J'intègre pleinement ce que j'entends et je l'utilise pour faire évoluer ma pensée"
+    ],
+    signes: ["Reformuler ce que vient de dire l'autre avant de répondre", "Poser des questions de clarification", "Ne pas couper la parole, même en désaccord"],
+    pieges: ["Préparer sa réponse pendant que l'autre parle", "Écouter uniquement ce qui confirme ses propres idées"],
+    classe: {
+      texte: "Dans les temps collectifs, écouter vraiment ses camarades — pas seulement les intervenants — est une compétence à part entière. Les retours de tes pairs, leurs doutes, leurs analyses sont des données précieuses si tu choisis de les recevoir sans les filtrer.",
+      exemples: ["Reprendre et valoriser une idée exprimée par un camarade dans la discussion", "Remarquer quand quelqu'un hésite ou cherche ses mots, et lui laisser l'espace pour finir", "Identifier une idée intéressante chez quelqu'un avec qui tu n'es pas d'accord"]
+    }
+  },
+  {
+    name: "Esprit critique",
+    def: "Analyser une situation avec recul et nuance",
+    color: "#8B5CF6",
+    colorBg: "#F5F3FF",
+    pourquoi: "PASSERELLE t'expose à des sujets de société complexes. L'esprit critique te permet de ne pas accepter les discours par défaut, de questionner, de comparer, de forger ton propre regard.",
+    niveaux: [
+      "J'accepte les informations sans les questionner",
+      "Je commence à identifier des contradictions mais sans les approfondir",
+      "J'analyse les arguments, je distingue faits et opinions",
+      "Je construis un raisonnement nuancé, documenté, et je sais défendre une position tout en restant ouvert"
+    ],
+    signes: ["Se demander 'qui dit ça et pourquoi ?'", "Croiser plusieurs points de vue avant de conclure", "Distinguer corrélation et causalité"],
+    pieges: ["Critiquer sans argumenter", "Confondre opinion personnelle et analyse"],
+    classe: {
+      texte: "La diversité des profils et des expériences au sein de la promotion est une richesse pour l'esprit critique. Confronter tes analyses à celles de tes camarades — qui viennent d'entreprises, de secteurs, de milieux différents — t'aide à sortir de ta propre bulle de raisonnement.",
+      exemples: ["Questionner respectueusement une affirmation d'un camarade en demandant sur quoi elle s'appuie", "Comparer deux analyses différentes du même sujet produites par des binômes distincts", "Défendre une position face au groupe en argumentant, sans se réfugier dans le consensus"]
+    }
+  },
+  {
+    name: "Travail en équipe",
+    def: "Collaborer efficacement malgré les désaccords",
+    color: "#10B981",
+    colorBg: "#ECFDF5",
+    pourquoi: "PASSERELLE se vit en groupe. La richesse du projet vient des apports croisés de chacun. Savoir travailler avec des personnes qui ne pensent pas comme soi est une compétence professionnelle fondamentale.",
+    niveaux: [
+      "Je travaille à côté des autres plus qu'avec eux",
+      "Je collabore mais je cède trop facilement ou au contraire je m'impose",
+      "Je contribue, j'écoute les autres, je gère les désaccords constructivement",
+      "Je fédère, je valorise les contributions de chacun et je fais progresser le groupe"
+    ],
+    signes: ["Prendre en compte l'avis de quelqu'un avec qui on est en désaccord", "Partager les tâches de façon équilibrée", "Reconnaître la contribution des autres"],
+    pieges: ["Faire à la place des autres pour aller plus vite", "Rester en retrait pour éviter les conflits"],
+    classe: {
+      texte: "La classe entière est une équipe au sens large. Les dynamiques qui se jouent entre vous — qui prend la parole, qui s'efface, qui fédère, qui isole — sont le reflet de ce qui se passera dans vos futurs contextes professionnels. PASSERELLE est l'occasion de les observer et de les travailler consciemment.",
+      exemples: ["Inclure activement dans la discussion quelqu'un qui n'a pas encore pris la parole", "Gérer un désaccord avec un camarade sans le dévaloriser ni capituler", "Répartir équitablement les rôles lors d'une production collective"]
+    }
+  },
+  {
+    name: "Adaptabilité",
+    def: "Ajuster ma posture face à l'imprévu",
+    color: "#F59E0B",
+    colorBg: "#FFFBEB",
+    pourquoi: "Les rencontres dans PASSERELLE ne se passent jamais exactement comme prévu. L'adaptabilité te permet de rester efficace et serein face à ce qui sort du cadre.",
+    niveaux: [
+      "Je suis déstabilisé dès que ça sort du cadre prévu",
+      "Je m'adapte mais avec stress ou résistance",
+      "Je réajuste rapidement sans perdre le fil",
+      "Je transforme l'imprévu en opportunité et j'aide les autres à s'adapter"
+    ],
+    signes: ["Rebondir positivement face à un changement de programme", "Modifier son approche selon les retours reçus", "Rester calme et opérationnel dans l'incertitude"],
+    pieges: ["Confondre adaptabilité et absence de convictions", "S'adapter aux autres pour éviter les conflits (voir différence avec l'écoute active)"],
+    classe: {
+      texte: "La dynamique de groupe est elle-même imprévisible. Une discussion peut prendre une direction inattendue, un camarade peut apporter un élément qui remet en cause ce que tu préparais à dire, le format d'une séance peut changer. Être adaptable avec la classe, c'est rester constructif dans ces moments-là.",
+      exemples: ["Modifier son intervention en séance parce qu'un camarade vient de dire quelque chose d'important", "Accepter sereinement qu'une production collective diffère de ce qu'on avait imaginé seul", "Aider le groupe à se recadrer lorsqu'une discussion part dans tous les sens"]
+    }
+  },
+  {
+    name: "Prise d'initiative",
+    def: "Agir sans attendre d'être sollicité, proposer des idées",
+    color: "#EF4444",
+    colorBg: "#FEF2F2",
+    pourquoi: "PASSERELLE t'invite à être acteur de ton parcours. Prendre des initiatives, c'est sortir de la posture d'élève passif pour entrer dans celle du professionnel qui s'engage.",
+    niveaux: [
+      "J'attends les consignes avant d'agir",
+      "Je prends des initiatives ponctuelles mais avec hésitation",
+      "Je propose régulièrement des idées et je les mets en œuvre",
+      "Je crée des opportunités, j'entraîne les autres et je prends des risques calculés"
+    ],
+    signes: ["Proposer une idée sans y être invité", "Anticiper un besoin avant qu'il soit exprimé", "Se porter volontaire pour une responsabilité"],
+    pieges: ["Agir sans concerter l'équipe (initiative non coordonnée)", "Confondre prise d'initiative et impulsivité"],
+    classe: {
+      texte: "Dans un groupe, les initiatives individuelles ont un effet d'entraînement. Quand tu proposes, tu autorises les autres à proposer aussi. Prendre des initiatives au sein de la classe, c'est contribuer à créer un climat où tout le monde se sent légitime à s'engager.",
+      exemples: ["Proposer une organisation ou une méthode de travail sans y être invité", "Lancer une discussion sur un sujet qui n'était pas prévu mais qui semble utile au groupe", "Prendre en charge un rôle dont personne ne voulait (animateur, synthétiseur, time-keeper)"]
+    }
+  },
+  {
+    name: "Remise en question",
+    def: "Analyser mes actions, réactions et opinions pour évoluer",
+    color: "#C4563A",
+    colorBg: "#FEF3F0",
+    pourquoi: "C'est la compétence qui donne tout son sens à PASSERELLE. Sans elle, les expériences vécues restent des anecdotes. Avec elle, elles deviennent des leviers de croissance personnelle et professionnelle.",
+    niveaux: [
+      "Je me justifie ou je reste sur mes positions",
+      "J'écoute les retours mais j'ai du mal à changer",
+      "Je prends en compte les remarques et j'ajuste ma posture",
+      "Je cherche activement à progresser, je change de regard et j'en fais une pratique régulière"
+    ],
+    signes: ["Reconnaître une erreur sans se dévaloriser", "Changer d'avis après une argumentation solide", "Se demander 'qu'est-ce que ça dit de moi ?'"],
+    pieges: ["Confondre remise en question et manque de confiance en soi", "Se remettre en question pour faire plaisir plutôt que pour progresser"],
+    classe: {
+      texte: "Tes camarades sont des miroirs. Ils voient tes réactions, ta posture, ta façon d'interagir — parfois mieux que toi. Les temps de débrief collectif en classe sont des occasions rares de recevoir des retours sincères dans un cadre bienveillant. En saisir l'opportunité, c'est déjà se remettre en question.",
+      exemples: ["Demander un retour sincère à un camarade sur ta façon d'intervenir en séance", "Accueillir une critique d'un pair sans se justifier immédiatement", "Partager volontairement en débrief un moment où tu t'es senti bloqué ou en désaccord avec toi-même"]
+    }
+  }
+];
+
+function buildCompGrid() {
+  const grid = document.getElementById('comp-grid-container');
+  if(!grid) return;
+  grid.innerHTML = '';
+  COMP_DATA.forEach((c, i) => {
+    const card = document.createElement('div');
+    card.className = 'comp-card';
+    card.onclick = () => openCompModal(i);
+    card.innerHTML = `
+      <div class="comp-color-bar" style="background:${c.color};"></div>
+      <div class="comp-num">Compétence ${i+1} / 7</div>
+      <div class="comp-name">${c.name}</div>
+      <div class="comp-def">${c.def}</div>
+      <span class="comp-arrow">→</span>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function openCompModal(i) {
+  const c = COMP_DATA[i];
+  const overlay = document.getElementById('comp-modal-overlay');
+  document.getElementById('comp-modal-header').style.background = c.colorBg;
+  document.getElementById('comp-modal-header').style.borderBottom = `3px solid ${c.color}`;
+  document.getElementById('comp-modal-num').style.color = c.color;
+  document.getElementById('comp-modal-num').textContent = `Compétence ${i+1} / 7`;
+  document.getElementById('comp-modal-title').textContent = c.name;
+  document.getElementById('comp-modal-title').style.color = c.color;
+  document.getElementById('comp-modal-def').textContent = c.def;
+
+  const levelColors = ['#EEEFF4','#FEF3E2','#EEEEFE','#D9F5EA'];
+  const levelTextColors = ['#666','#92600A','#12163A','#0B7A56'];
+  const levelLabels = ['Débutant','En développement','Maîtrise satisfaisante','Maîtrise affirmée'];
+
+  let html = `
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:10.5px;font-weight:600;color:#6C7189;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.6rem;margin-top:1rem;">Pourquoi cette compétence dans PASSERELLE ?</div>
+      <p style="font-size:13px;line-height:1.6;color:#1E2338;">${c.pourquoi}</p>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:10.5px;font-weight:600;color:#6C7189;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.6rem;">Les 4 niveaux</div>
+      ${c.niveaux.map((n,j)=>`
+        <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;">
+          <span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:${levelColors[j]};color:${levelTextColors[j]};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">${j+1}</span>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:${levelTextColors[j]};margin-bottom:1px;">${levelLabels[j]}</div>
+            <div style="font-size:12px;color:#444;line-height:1.4;">${n}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:10.5px;font-weight:600;color:#6C7189;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.6rem;">Signes que tu la développes</div>
+      ${c.signes.map(s=>`<div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px;font-size:12px;color:#1E2338;line-height:1.4;"><span style="color:${c.color};flex-shrink:0;margin-top:1px;">✓</span>${s}</div>`).join('')}
+    </div>
+    <div style="background:#F5F6FB;border-radius:8px;padding:.75rem 1rem;margin-bottom:.75rem;">
+      <div style="font-size:10.5px;font-weight:600;color:#6C7189;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;">Points de vigilance</div>
+      ${c.pieges.map(p=>`<div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px;font-size:12px;color:#444;line-height:1.4;"><span style="color:#F59E0B;flex-shrink:0;margin-top:1px;">⚠</span>${p}</div>`).join('')}
+    </div>
+    <div style="background:radial-gradient(ellipse 90% 130% at 100% 0%, rgba(157,78,240,0.28), transparent 55%), #12163A;border-radius:8px;padding:.85rem 1rem;">
+      <div style="font-size:10.5px;font-weight:600;color:#C4B5FD;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;">Interaction avec la classe</div>
+      <p style="font-size:12px;color:#DDE0F0;line-height:1.6;margin-bottom:.6rem;">${c.classe.texte}</p>
+      ${c.classe.exemples.map(e=>`<div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px;font-size:12px;color:#B4BAD8;line-height:1.4;"><span style="color:#9D4EF0;flex-shrink:0;margin-top:1px;">→</span>${e}</div>`).join('')}
+    </div>
+  `;
+  document.getElementById('comp-modal-body').innerHTML = html;
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCompModal(e) {
+  if(e && e.target !== document.getElementById('comp-modal-overlay') && !e.target.closest('button[onclick="closeCompModal()"]')) return;
+  document.getElementById('comp-modal-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+</script>
+
+<script>
+const COMPS = ['Communication','Écoute active','Esprit critique','Travail en équipe','Adaptabilité','Initiative','Remise en question'];
+const MILESTONES = [3,6,8];
+const SESSIONS = 8;
+
+let state = {
+  nom:'', promo:'', entreprise:'',
+  diag: new Array(7).fill(0),
+  sessions: {},
+  bilan: {b1:'',b2:'',b3:'',b4:'',b5:''}
+};
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('passerelle_portfolio_v1');
+    if(s) state = Object.assign({}, state, JSON.parse(s));
+  } catch(e){}
+}
+
+function persist() {
+  try { localStorage.setItem('passerelle_portfolio_v1', JSON.stringify(state)); } catch(e){}
+  scheduleCloudSave();
+}
+
+function saveField(k,v) { state[k]=v; persist(); }
+
+function buildEvalGrid(containerId, dataArr, onchange, prefix) {
+  const grid = document.getElementById(containerId);
+  if(!grid) return;
+  grid.innerHTML = '';
+  COMPS.forEach((c,i) => {
+    const row = document.createElement('div');
+    row.className = 'eval-row';
+    const nameEl = document.createElement('div');
+    nameEl.className = 'eval-comp';
+    nameEl.textContent = c;
+    const stars = document.createElement('div');
+    stars.className = 'eval-stars';
+    const numEl = document.createElement('div');
+    numEl.className = 'eval-num';
+    numEl.id = prefix+'-num-'+i;
+    numEl.textContent = dataArr[i] || '–';
+    for(let v=1;v<=4;v++) {
+      const btn = document.createElement('button');
+      btn.className = 'star-btn' + (dataArr[i]===v?' selected':'');
+      btn.textContent = v;
+      btn.onclick = () => { onchange(i,v); refreshEvalGrid(containerId, dataArr, prefix); };
+      stars.appendChild(btn);
+    }
+    row.appendChild(nameEl);
+    row.appendChild(stars);
+    row.appendChild(numEl);
+    grid.appendChild(row);
+  });
+}
+
+function refreshEvalGrid(containerId, dataArr, prefix) {
+  document.querySelectorAll('#'+containerId+' .eval-row').forEach((row,i) => {
+    row.querySelectorAll('.star-btn').forEach((b,j) => b.classList.toggle('selected', dataArr[i]===(j+1)));
+    const num = document.getElementById(prefix+'-num-'+i);
+    if(num) num.textContent = dataArr[i]||'–';
+  });
+}
+
+function saveDiag() {
+  persist();
+  flash('diag-save-status','Diagnostic enregistré ✓');
+  updateRadarChart(currentRadar);
+}
+
+let currentSess = 1;
+
+function sessionHasContent(n) {
+  const sess = state.sessions['sess_'+n];
+  if(!sess) return false;
+  if(sess.scores && sess.scores.some(s=>s>0)) return true;
+  return ['situation','analyse','critique','evolution','remise','plan','cours-notion','cours-lien','rq1','rq2','rq3'].some(f=>sess[f] && sess[f].trim().length>0);
+}
+
+function buildSessNav() {
+  const nav = document.getElementById('sess-nav');
+  if(!nav) return;
+  nav.innerHTML = '';
+  for(let i=1;i<=SESSIONS;i++) {
+    const btn = document.createElement('button');
+    btn.className = 'plank' + (i===currentSess?' active':'') + (MILESTONES.includes(i)?' milestone':'') + (sessionHasContent(i)?' filled':'');
+    btn.title = MILESTONES.includes(i)?'Séance de recul (s.'+i+')':'Séance '+i;
+    btn.textContent = i;
+    const n = i;
+    btn.onclick = () => loadSession(n);
+    nav.appendChild(btn);
+  }
+  const pct = document.getElementById('prog-pct');
+  if(pct) pct.textContent = 'Séance ' + currentSess + ' / ' + SESSIONS;
+}
+
+function loadSession(n) {
+  currentSess = n;
+  document.getElementById('sess-num').textContent = n;
+  const isMilestone = MILESTONES.includes(n);
+  document.getElementById('recul-section').style.display = isMilestone?'block':'none';
+  document.getElementById('milestone-notice').classList.toggle('visible', isMilestone);
+  const key = 'sess_'+n;
+  if(!state.sessions[key]) state.sessions[key]={scores:new Array(7).fill(0),situation:'',analyse:'',critique:'',evolution:'',remise:'',plan:'','cours-notion':'','cours-lien':'',rq1:'',rq2:'',rq3:''};
+  const sess = state.sessions[key];
+  buildEvalGrid('sess-eval-grid', sess.scores, (i,v)=>{ sess.scores[i]=v; }, 'sess');
+  ['situation','analyse','critique','evolution','remise','plan','cours-notion','cours-lien'].forEach(f=>{
+    const el = document.getElementById('r-'+f);
+    if(el) el.value = sess[f]||'';
+  });
+  ['rq1','rq2','rq3'].forEach(f=>{
+    const el = document.getElementById(f);
+    if(el) el.value = sess[f]||'';
+  });
+  buildSessNav();
+}
+
+function saveSess() {
+  const key = 'sess_'+currentSess;
+  if(!state.sessions[key]) state.sessions[key]={scores:new Array(7).fill(0)};
+  ['situation','analyse','critique','evolution','remise','plan','cours-notion','cours-lien'].forEach(f=>{
+    const el = document.getElementById('r-'+f);
+    if(el) state.sessions[key][f]=el.value;
+  });
+  ['rq1','rq2','rq3'].forEach(f=>{
+    const el = document.getElementById(f);
+    if(el) state.sessions[key][f]=el.value;
+  });
+  persist();
+  flash('sess-save-status','Séance '+currentSess+' enregistrée ✓');
+  buildSessNav();
+}
+
+function saveBilan() {
+  ['b1','b2','b3','b4','b5'].forEach(k=>{
+    const el=document.getElementById(k);
+    if(el) state.bilan[k]=el.value;
+  });
+  persist();
+  flash('bilan-save-status','Bilan enregistré ✓');
+}
+
+function flash(id, msg) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = msg;
+  setTimeout(()=>el.textContent='', 3000);
+}
+
+function getAvgScores(sessionNums) {
+  const totals = new Array(7).fill(0);
+  const counts = new Array(7).fill(0);
+  sessionNums.forEach(n=>{
+    const sess = state.sessions['sess_'+n];
+    if(sess && sess.scores) sess.scores.forEach((s,i)=>{ if(s>0){totals[i]+=s;counts[i]++;} });
+  });
+  return totals.map((t,i)=>counts[i]?Math.round(t/counts[i]*10)/10:0);
+}
+
+let radarChartInstance = null;
+let currentRadar = 'depart';
+
+function updateRadarChart(mode) {
+  const canvas = document.getElementById('radarChart');
+  if(!canvas) return;
+  let datasets = [];
+  let caption = '';
+  if(mode==='depart') {
+    datasets=[{label:'Diagnostic',data:state.diag.map(v=>v||0),backgroundColor:'rgba(140,148,156,0.15)',borderColor:'#6C7189',borderWidth:2,pointBackgroundColor:'#6C7189',pointRadius:4}];
+    caption='Diagnostic initial — auto-évaluation de départ';
+  } else if(mode==='t1') {
+    datasets=[{label:'S.1–3',data:getAvgScores([1,2,3]),backgroundColor:'rgba(91,91,245,0.18)',borderColor:'#5B5BF5',borderWidth:2,pointBackgroundColor:'#5B5BF5',pointRadius:4}];
+    caption='Séances 1 à 3 — début de parcours';
+  } else if(mode==='t2') {
+    datasets=[{label:'S.4–6',data:getAvgScores([4,5,6]),backgroundColor:'rgba(157,78,240,0.16)',borderColor:'#9D4EF0',borderWidth:2,pointBackgroundColor:'#9D4EF0',pointRadius:4}];
+    caption='Séances 4 à 6 — milieu de parcours';
+  } else if(mode==='t3') {
+    datasets=[{label:'S.7–8',data:getAvgScores([7,8]),backgroundColor:'rgba(16,185,129,0.15)',borderColor:'#10B981',borderWidth:2,pointBackgroundColor:'#10B981',pointRadius:4}];
+    caption='Séances 7 à 8 — fin de parcours';
+  } else {
+    datasets=[
+      {label:'Diagnostic',data:state.diag.map(v=>v||0),backgroundColor:'rgba(140,148,156,0.08)',borderColor:'#6C7189',borderWidth:1.5,pointBackgroundColor:'#6C7189',pointRadius:3,borderDash:[4,3]},
+      {label:'S.1–3',data:getAvgScores([1,2,3]),backgroundColor:'rgba(91,91,245,0.1)',borderColor:'#5B5BF5',borderWidth:1.5,pointBackgroundColor:'#5B5BF5',pointRadius:3},
+      {label:'S.4–6',data:getAvgScores([4,5,6]),backgroundColor:'rgba(157,78,240,0.08)',borderColor:'#9D4EF0',borderWidth:1.5,pointBackgroundColor:'#9D4EF0',pointRadius:3},
+      {label:'S.7–8',data:getAvgScores([7,8]),backgroundColor:'rgba(16,185,129,0.1)',borderColor:'#10B981',borderWidth:2,pointBackgroundColor:'#10B981',pointRadius:3}
+    ];
+    caption='Comparaison diagnostic / S.1–3 / S.4–6 / S.7–8';
+  }
+  document.getElementById('radar-caption').textContent=caption;
+  if(radarChartInstance) radarChartInstance.destroy();
+  radarChartInstance = new Chart(canvas, {
+    type:'radar',
+    data:{ labels:COMPS, datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{ r:{ min:0, max:4, ticks:{stepSize:1,display:false}, grid:{color:'rgba(16,20,42,0.08)'}, pointLabels:{font:{family:'Inter, sans-serif',size:11},color:'#1E2338'} } },
+      plugins:{ legend:{ display:datasets.length>1, position:'bottom', labels:{font:{size:11,family:'Inter'},boxWidth:10,padding:14} } }
+    }
+  });
+}
+
+function showRadar(mode) {
+  currentRadar = mode;
+  document.querySelectorAll('.tab-mini').forEach((b,i)=>{
+    b.classList.toggle('active', ['depart','t1','t2','t3','compare'][i]===mode);
+  });
+  updateRadarChart(mode);
+}
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+  const map={'cover':0,'comps':1,'diag':2,'seances':3,'radars':4,'bilan':5};
+  document.querySelectorAll('.side-btn')[map[id]].classList.add('active');
+  if(id==='radars') setTimeout(()=>updateRadarChart(currentRadar),80);
+  if(id==='bilan') {
+    ['b1','b2','b3','b4','b5'].forEach(k=>{
+      const el=document.getElementById(k);
+      if(el) el.value=state.bilan[k]||'';
+    });
+  }
+}
+
+function exportData() {
+  const nom = state.nom || 'etudiant';
+  const filename = 'portfolio_passerelle_' + nom.replace(/\s+/g,'_').toLowerCase() + '_' + new Date().toISOString().slice(0,10) + '.json';
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+function importData() {
+  document.getElementById('import-file').click();
+}
+
+function handleImport(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      state = Object.assign({}, state, imported);
+      persist();
+      document.getElementById('f-nom').value = state.nom||'';
+      document.getElementById('f-promo').value = state.promo||'';
+      document.getElementById('f-entreprise').value = state.entreprise||'';
+      buildEvalGrid('diag-grid', state.diag, (i,v)=>{ state.diag[i]=v; refreshEvalGrid('diag-grid',state.diag,'diag'); }, 'diag');
+      loadSession(currentSess);
+      alert('Données importées avec succès !');
+    } catch(err) {
+      alert('Fichier invalide. Vérifiez qu\'il s\'agit d\'un export JSON du portfolio.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+/* ==================== ONEDRIVE (Microsoft 365) ==================== */
+const CLOUD_CONFIG = {
+  clientId: '025e3be6-f6a1-4905-bceb-f722de7d91bf',
+  tenantId: 'abf9396f-0603-4c1f-8780-35eeb9378843',
+  scopes: ['User.Read', 'Files.ReadWrite'],
+  filePath: '/PASSERELLE/portfolio_passerelle.json'
+};
+
+let msalApp = null;
+let cloudAccount = null;
+let cloudSaveTimer = null;
+let cloudBusy = false;
+
+function cloudAvailable() {
+  return typeof msal !== 'undefined' && location.protocol !== 'file:';
+}
+
+function cloudUI(status, dotClass) {
+  const dot = document.getElementById('cloud-dot');
+  const txt = document.getElementById('cloud-status-text');
+  const loginBtn = document.getElementById('cloud-login-btn');
+  const logoutBtn = document.getElementById('cloud-logout-btn');
+  const note = document.getElementById('export-note');
+  if(txt) txt.textContent = status;
+  if(dot) dot.className = 'cloud-dot' + (dotClass ? ' ' + dotClass : '');
+  if(loginBtn) loginBtn.style.display = cloudAccount ? 'none' : 'block';
+  if(logoutBtn) logoutBtn.style.display = cloudAccount ? 'block' : 'none';
+  if(note) note.textContent = cloudAccount ? 'Synchronisé avec OneDrive + copie locale' : 'Données sauvegardées localement';
+}
+
+function initCloud() {
+  if(typeof msal === 'undefined') { cloudUI('OneDrive : librairie non chargée', 'err'); return; }
+  if(location.protocol === 'file:') {
+    cloudUI('OneDrive : disponible uniquement sur la version hébergée', '');
+    const b = document.getElementById('cloud-login-btn');
+    if(b) { b.disabled = true; b.textContent = 'Connexion indisponible (fichier local)'; }
+    return;
+  }
+  msalApp = new msal.PublicClientApplication({
+    auth: {
+      clientId: CLOUD_CONFIG.clientId,
+      authority: 'https://login.microsoftonline.com/' + CLOUD_CONFIG.tenantId,
+      redirectUri: window.location.origin + window.location.pathname
+    },
+    cache: { cacheLocation: 'localStorage' }
+  });
+  msalApp.initialize().then(() => {
+    const accounts = msalApp.getAllAccounts();
+    if(accounts.length > 0) {
+      cloudAccount = accounts[0];
+      msalApp.setActiveAccount(cloudAccount);
+      cloudUI('Connecté : ' + (cloudAccount.name || cloudAccount.username), 'on');
+    }
+  }).catch(() => cloudUI('OneDrive : erreur d\'initialisation', 'err'));
+}
+
+async function cloudToken() {
+  const req = { scopes: CLOUD_CONFIG.scopes, account: cloudAccount };
+  try {
+    const r = await msalApp.acquireTokenSilent(req);
+    return r.accessToken;
+  } catch(e) {
+    const r = await msalApp.acquireTokenPopup(req);
+    return r.accessToken;
+  }
+}
+
+async function cloudLogin() {
+  if(!cloudAvailable() || !msalApp) return;
+  try {
+    const result = await msalApp.loginPopup({ scopes: CLOUD_CONFIG.scopes });
+    cloudAccount = result.account;
+    msalApp.setActiveAccount(cloudAccount);
+    cloudUI('Connecté : ' + (cloudAccount.name || cloudAccount.username), 'on');
+    await cloudLoad();
+  } catch(e) {
+    cloudUI('OneDrive : connexion annulée ou refusée', 'err');
+  }
+}
+
+async function cloudLogout() {
+  if(!msalApp || !cloudAccount) return;
+  const acc = cloudAccount;
+  cloudAccount = null;
+  cloudUI('OneDrive : non connecté', '');
+  try { await msalApp.logoutPopup({ account: acc }); } catch(e) {}
+}
+
+async function cloudLoad() {
+  if(!cloudAccount) return;
+  try {
+    cloudUI('Vérification des données OneDrive…', 'on');
+    const token = await cloudToken();
+    const resp = await fetch('https://graph.microsoft.com/v1.0/me/drive/root:' + CLOUD_CONFIG.filePath + ':/content', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if(resp.status === 404) {
+      await cloudSave();
+      return;
+    }
+    if(!resp.ok) throw new Error(resp.status);
+    const cloudState = await resp.json();
+    const localEmpty = !state.nom && !state.diag.some(v=>v>0) && Object.keys(state.sessions).length===0;
+    const useCloud = localEmpty || confirm('Des données ont été trouvées dans votre OneDrive.\n\nOK = charger les données OneDrive (remplace les données de cet appareil)\nAnnuler = conserver les données de cet appareil (elles seront envoyées vers OneDrive)');
+    if(useCloud) {
+      state = Object.assign({}, state, cloudState);
+      try { localStorage.setItem('passerelle_portfolio_v1', JSON.stringify(state)); } catch(e){}
+      document.getElementById('f-nom').value = state.nom||'';
+      document.getElementById('f-promo').value = state.promo||'';
+      document.getElementById('f-entreprise').value = state.entreprise||'';
+      buildEvalGrid('diag-grid', state.diag, (i,v)=>{ state.diag[i]=v; refreshEvalGrid('diag-grid',state.diag,'diag'); }, 'diag');
+      loadSession(currentSess);
+      cloudUI('Données OneDrive chargées ✓ — ' + (cloudAccount.name || ''), 'on');
+    } else {
+      await cloudSave();
+    }
+  } catch(e) {
+    cloudUI('OneDrive : erreur de lecture', 'err');
+  }
+}
+
+async function cloudSave() {
+  if(!cloudAccount || cloudBusy) return;
+  cloudBusy = true;
+  try {
+    const token = await cloudToken();
+    const resp = await fetch('https://graph.microsoft.com/v1.0/me/drive/root:' + CLOUD_CONFIG.filePath + ':/content', {
+      method: 'PUT',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    });
+    if(!resp.ok) throw new Error(resp.status);
+    const h = new Date();
+    cloudUI('OneDrive synchronisé à ' + String(h.getHours()).padStart(2,'0') + ':' + String(h.getMinutes()).padStart(2,'0') + ' ✓', 'on');
+  } catch(e) {
+    cloudUI('OneDrive : échec de synchronisation (copie locale OK)', 'err');
+  } finally {
+    cloudBusy = false;
+  }
+}
+
+function scheduleCloudSave() {
+  if(!cloudAccount) return;
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(cloudSave, 2500);
+}
+
+function init() {
+  loadState();
+  buildCompGrid();
+  document.getElementById('f-nom').value = state.nom||'';
+  document.getElementById('f-promo').value = state.promo||'';
+  document.getElementById('f-entreprise').value = state.entreprise||'';
+  buildEvalGrid('diag-grid', state.diag, (i,v)=>{ state.diag[i]=v; refreshEvalGrid('diag-grid',state.diag,'diag'); }, 'diag');
+  buildSessNav();
+  loadSession(1);
+  initCloud();
+}
+
+init();
+</script>
+</body>
+</html>
